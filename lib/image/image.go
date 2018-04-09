@@ -314,11 +314,15 @@ func readOrientation(r io.Reader) (o int, err error) {
 }
 
 func decode(r io.Reader) (d image.Image, format string, err error) {
-	s, format, err := image.Decode(r)
+	var buf bytes.Buffer
+	tee := io.TeeReader(r, &buf)
+
+	s, format, err := image.Decode(tee)
 	if err != nil {
 		return
 	}
-	o, err := readOrientation(r)
+
+	o, err := readOrientation(&buf)
 	if err != nil {
 		return s, format, nil
 	}
